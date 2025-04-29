@@ -1,29 +1,43 @@
 ﻿@page
+
 @model FoodPantry.Pages.IndexModel
 @{
-    ViewData["Title"] = "Food Pantry";
+    ViewData["Title"] = "FoodPantry";
 }
 
-<h1>place an order here</h1>
+<h1>place order here</h1>
 
 <form method="post">
     <div>
         <label for="StudentName">Name:</label>
         <input asp-for="StudentName" />
     </div>
+
     <div>
         <label for="StudentId">Student ID:</label>
         <input asp-for="StudentId" />
     </div>
 
     <h3>Select items:</h3>
-    @foreach (var item in Item)
+
+    @foreach (Item item in Model.ItemList)
     {
         <div>
-            <input type="checkbox" name="SelectedItemIds" value="@item.ItemId" />
+            <input type="checkbox" name="ItemSelection.SelectedItemIds" value="@item.ItemId" />
             <label>@item.ItemName</label>
         </div>
     }
 
     <button type="submit">Submit</button>
 </form>
+
+@if (Model.ItemSelection.SelectedItems.Any()) //if list has any items
+{
+    <h3>You selected:</h3>
+    <ul>
+        @foreach (var selected in Model.ItemSelection.SelectedItems)
+        {
+            <li>@selected</li>
+        }
+    </ul>
+}
