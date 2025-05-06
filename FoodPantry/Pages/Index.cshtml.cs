@@ -17,9 +17,6 @@ namespace FoodPantry.Pages
         }
 
         [BindProperty]
-        public IndexModel Index {get; set;} // set to non-null explicit?
-
-        [BindProperty]
         public string ?StudentName {get; set;} // todo
 
         [BindProperty]
@@ -35,11 +32,33 @@ namespace FoodPantry.Pages
             LoadItemList();
         }
         public IActionResult OnPost()
-        {
-            if (!ModelState.IsValid){
-            return Page();}
-            return RedirectToPage("./Index");
-        }
+{
+    if (!ModelState.IsValid){
+        LoadItemList(); // Need to reload items on invalid form
+        return Page();
+    }
+    
+    // Process selected items
+    if (ItemSelection.SelectedItemIds != null && ItemSelection.SelectedItemIds.Any())
+    {
+        ItemSelection.SelectedItems = new List<string>();
+        LoadItemList(); // Load the items to get names
+        
+        foreach (var itemId in ItemSelection.SelectedItemIds)
+        {
+            var item = ItemList.FirstOrDefault(i => i.ItemId == itemId);
+            if (item != null)
+            {
+                ItemSelection.SelectedItems.Add(item.ItemName);
+            }
+        }
+    }
+    
+    // Now you can save to database or do other processing
+    // ...
+    
+    return Page(); // Show the same page with selected items
+}
 
         private void LoadItemList()
         {
@@ -91,5 +110,6 @@ public class Orders
 
 public class ItemSelection
 {
-    public List<string> SelectedItems { get; set; } = new();
+    public List<int> SelectedItemIds { get; set; } = new();
+    public List<string> SelectedItems { get; set; } = new();
 }
