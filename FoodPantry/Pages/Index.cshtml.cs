@@ -26,39 +26,53 @@ namespace FoodPantry.Pages
         public List<Item> ?ItemList {get;set;} // todo
 
         [BindProperty]
-    public ItemSelection ItemSelection { get; set; } = new();
+        public ItemSelection ItemSelection { get; set; } = new();
+
         public void OnGet()
         {
             LoadItemList();
         }
+
         public IActionResult OnPost()
-{
-    if (!ModelState.IsValid){
-        LoadItemList(); // Need to reload items on invalid form
-        return Page();
-    }
-    
-    // Process selected items
-    if (ItemSelection.SelectedItemIds != null && ItemSelection.SelectedItemIds.Any())
-    {
-        ItemSelection.SelectedItems = new List<string>();
-        LoadItemList(); // Load the items to get names
-        
-        foreach (var itemId in ItemSelection.SelectedItemIds)
-        {
-            var item = ItemList.FirstOrDefault(i => i.ItemId == itemId);
-            if (item != null)
-            {
-                ItemSelection.SelectedItems.Add(item.ItemName);
-            }
-        }
-    }
-    
-    // Now you can save to database or do other processing
-    // ...
-    
-    return Page(); // Show the same page with selected items
-}
+        {
+            if (!ModelState.IsValid){
+                LoadItemList(); // Need to reload items on invalid form
+                return Page();
+            }
+            
+           // Process selected items
+            if (ItemSelection.SelectedItemIds != null && ItemSelection.SelectedItemIds.Any())
+            {
+                ItemSelection.SelectedItems = new List<string>();
+                LoadItemList(); // Load the items to get names
+
+                using (var connection = new SqliteConnection("Data Source=foodpantry.db"))
+                {
+                    connection.Open();
+
+                    foreach (var itemId in ItemSelection.SelectedItemIds)
+                    {
+                        var item = ItemList.FirstOrDefault(i => i.ItemId == itemId);
+                        if (item != null)
+                        {
+                            ItemSelection.SelectedItems.Add(item.ItemName);
+
+                            // insert each item into Orders table
+                            var command = connection.CreateCommand();
+                            command.CommandText = @"
+                                INSERT INTO Orders (StudentName, StudentId, OrderedItems)
+                                VALUES (@StudentName, @StudentId, @OrderedItems)";
+                            command.Parameters.AddWithValue("@StudentName", StudentName);
+                            command.Parameters.AddWithValue("@StudentId", StudentId);
+                            command.Parameters.AddWithValue("@OrderedItems", item.ItemName);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+    
+            return Page(); // Show the same page with selected items
+        }
 
         private void LoadItemList()
         {
@@ -87,29 +101,29 @@ namespace FoodPantry.Pages
 }
 
 public class Category
-    {
-        public int CategoryId { get; set; }
-        public string CategoryName { get; set; }
-    }
+{
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; }
+}
 
 public class Item
-    {
-        public int ItemId {get; set; }
-        public string ItemName {get; set;}
-        public int CategoryId {get; set;}
-    }
+{
+    public int ItemId {get; set; }
+    public string ItemName {get; set;}
+    public int CategoryId {get; set;}
+}
 
 public class Orders
-    {
-        public int OrderId {get; set;}
-        public int StudentId {get; set;}
-        public string StudentName {get; set;}
-        public string OrderedItems {get; set;}
-        public string OrderDateTime {get; set;}
-    }
+{
+    public int OrderId {get; set;}
+    public string StudentId {get; set;}
+    public string StudentName {get; set;}
+    public string OrderedItems {get; set;}
+    public string OrderDateTime {get; set;}
+}
 
 public class ItemSelection
 {
-    public List<int> SelectedItemIds { get; set; } = new();
-    public List<string> SelectedItems { get; set; } = new();
+    public List<int> SelectedItemIds { get; set; } = new();
+    public List<string> SelectedItems { get; set; } = new();
 }
