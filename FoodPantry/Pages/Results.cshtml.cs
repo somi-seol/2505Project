@@ -10,6 +10,8 @@ namespace MyApp.Namespace
     {
         [BindProperty]
         public List<NameItems> ?OrderedItemsList {get;set;}
+
+
         public void OnGet()
         {
             OrderedItemsList = new List<NameItems>();
@@ -22,7 +24,7 @@ namespace MyApp.Namespace
                 {
                     while (reader.Read())
                     {
-                        OrderedItemsList.Add(new Item
+                        OrderedItemsList.Add(new NameItems
                         {
                             StudentName = reader.GetString(0),
                             OrderedItems = reader.GetString(1),

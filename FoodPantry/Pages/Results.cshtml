@@ -1,4 +1,14 @@
 ﻿@page
 @model MyApp.Namespace.ResultsModel
-@{
+
+<!-- print Model.OrderedItemsList -->
+@foreach (var group in Model.OrderedItemsList.GroupBy(i => i.StudentName))
+{
+    <div><strong>@group.Key</strong></div>
+    <ul>
+        @foreach (var entry in group)
+        {
+            <li>@entry.OrderedItems</li>
+        }
+    </ul>
 }
